@@ -122,103 +122,191 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Profil Saya', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text('Profil Saya', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         children: [
-          Center(
-            child: Stack(
-              children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: AppColors.primary,
-                  backgroundImage: _avatarUrl != null ? NetworkImage(_avatarUrl!) : null,
-                  child: _avatarUrl == null
-                      ? const Icon(Icons.person, size: 50, color: Colors.white)
-                      : null,
+          // Header Card
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(10),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
-                if (_isUploadingAvatar)
-                  const Positioned.fill(
-                    child: CircularProgressIndicator(color: Colors.white),
-                  ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: GestureDetector(
-                    onTap: _isUploadingAvatar ? null : _changeAvatar,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
+              ],
+            ),
+            child: Column(
+              children: [
+                Stack(
+                  children: [
+                    Container(
                       decoration: BoxDecoration(
-                        color: AppColors.secondary,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+                        border: Border.all(color: AppColors.primary.withAlpha(50), width: 4),
                       ),
-                      child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                      child: CircleAvatar(
+                        radius: 54,
+                        backgroundColor: AppColors.background,
+                        backgroundImage: _avatarUrl != null ? NetworkImage(_avatarUrl!) : null,
+                        child: _avatarUrl == null
+                            ? const Icon(Icons.person, size: 50, color: AppColors.textSecondary)
+                            : null,
+                      ),
                     ),
-                  ),
+                    if (_isUploadingAvatar)
+                      const Positioned.fill(
+                        child: CircularProgressIndicator(color: AppColors.primary),
+                      ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: _isUploadingAvatar ? null : _changeAvatar,
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 3),
+                          ),
+                          child: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _fullName,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Anggota UNESA Marketplace',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            _fullName,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
           const SizedBox(height: 32),
-          ListTile(
-            leading: const Icon(Icons.list_alt),
-            title: const Text('Barang Jualan Saya'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const MyListingsScreen()),
-              );
-            },
+          
+          // Menu List
+          const Padding(
+            padding: EdgeInsets.only(left: 8.0, bottom: 12),
+            child: Text('Menu Utama', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
           ),
-          ListTile(
-            leading: const Icon(Icons.favorite_border),
-            title: const Text('Barang Tersimpan'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SavedItemsScreen()),
-              );
-            },
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              children: [
+                _buildMenuItem(
+                  icon: Icons.storefront_outlined,
+                  title: 'Barang Jualan Saya',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MyListingsScreen()),
+                    );
+                  },
+                ),
+                const Divider(height: 1, indent: 56),
+                _buildMenuItem(
+                  icon: Icons.bookmark_border,
+                  title: 'Barang Tersimpan',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SavedItemsScreen()),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Keluar', style: TextStyle(color: Colors.red)),
-            onTap: () async {
-              final confirm = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Keluar'),
-                  content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false), 
-                      child: const Text('Batal')
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, true), 
-                      child: const Text('Keluar', style: TextStyle(color: Colors.red)),
-                    ),
-                  ],
-                )
-              );
-              if (confirm == true) {
-                await Supabase.instance.client.auth.signOut();
-              }
-            },
+          const SizedBox(height: 24),
+          
+          // Logout Button
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: _buildMenuItem(
+              icon: Icons.logout,
+              iconColor: Colors.redAccent,
+              title: 'Keluar Akun',
+              textColor: Colors.redAccent,
+              showTrailing: false,
+              onTap: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Keluar', style: TextStyle(fontWeight: FontWeight.bold)),
+                    content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false), 
+                        child: const Text('Batal', style: TextStyle(color: AppColors.textSecondary))
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true), 
+                        child: const Text('Keluar', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  )
+                );
+                if (confirm == true) {
+                  await Supabase.instance.client.auth.signOut();
+                }
+              },
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color iconColor = AppColors.primary,
+    Color textColor = AppColors.textPrimary,
+    bool showTrailing = true,
+  }) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: iconColor.withAlpha(25),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(icon, color: iconColor),
+      ),
+      title: Text(title, style: TextStyle(fontWeight: FontWeight.w600, color: textColor)),
+      trailing: showTrailing ? const Icon(Icons.chevron_right, color: AppColors.textSecondary) : null,
+      onTap: onTap,
     );
   }
 }

@@ -122,14 +122,19 @@ class _AddListingScreenState extends State<AddListingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
         title: const Text(
           'Jual Barang Baru',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Form(
           key: _formKey,
           child: Column(
@@ -138,124 +143,91 @@ class _AddListingScreenState extends State<AddListingScreen> {
               _buildImagePicker(),
               const SizedBox(height: 24),
 
-              const Text(
-                'Nama Barang',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
+              _buildLabel('Nama Barang'),
+              _buildTextField(
                 controller: _titleController,
+                hintText: 'Misal: Laptop ASUS, Buku Kalkulus',
                 validator: (val) => val!.isEmpty ? 'Wajib diisi' : null,
-                decoration: InputDecoration(
-                  hintText: 'Misal: Laptop ASUS, Buku Kalkulus',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
               ),
               const SizedBox(height: 16),
 
-              const Text(
-                'Harga',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
+              _buildLabel('Harga'),
+              _buildTextField(
                 controller: _priceController,
-                validator: (val) => val!.isEmpty ? 'Wajib diisi' : null,
+                hintText: '0',
+                prefixText: 'Rp ',
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  prefixText: 'Rp ',
-                  hintText: '0',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+                validator: (val) => val!.isEmpty ? 'Wajib diisi' : null,
               ),
               const SizedBox(height: 16),
 
-              const Text(
-                'Kategori',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                initialValue: _selectedCategory,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLabel('Kategori'),
+                        _buildDropdown(
+                          value: _selectedCategory,
+                          hint: 'Pilih',
+                          items: [
+                            'Elektronik',
+                            'Akademik',
+                            'Fashion',
+                            'Kebutuhan Kos',
+                            'Hobi',
+                            'Lainnya',
+                          ],
+                          onChanged: (v) => setState(() => _selectedCategory = v),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                items:
-                    [
-                          'Elektronik',
-                          'Akademik',
-                          'Fashion',
-                          'Kebutuhan Kos',
-                          'Hobi',
-                          'Lainnya',
-                        ]
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                        .toList(),
-                onChanged: (v) => setState(() => _selectedCategory = v),
-                hint: const Text('Pilih Kategori'),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLabel('Kondisi'),
+                        _buildDropdown(
+                          value: _selectedCondition,
+                          hint: 'Pilih',
+                          items: [
+                            'Baru',
+                            'Seperti baru',
+                            'Baik',
+                            'Cukup',
+                            'Bekas pemakaian berat',
+                          ],
+                          onChanged: (v) => setState(() => _selectedCondition = v),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
 
-              const Text(
-                'Kondisi',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                initialValue: _selectedCondition,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                items:
-                    [
-                          'Baru',
-                          'Seperti baru',
-                          'Baik',
-                          'Cukup',
-                          'Bekas pemakaian berat',
-                        ]
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                        .toList(),
-                onChanged: (v) => setState(() => _selectedCondition = v),
-                hint: const Text('Pilih Kondisi'),
-              ),
-              const SizedBox(height: 16),
-
-              const Text(
-                'Deskripsi',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
+              _buildLabel('Deskripsi'),
+              _buildTextField(
                 controller: _descController,
-                maxLines: 4,
-                decoration: InputDecoration(
-                  hintText: 'Deskripsikan kondisi, kelengkapan, dll.',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+                hintText: 'Deskripsikan kondisi, kelengkapan, alasan jual, dll.',
+                maxLines: 5,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: 54,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submitListing,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                   child: _isLoading
@@ -264,7 +236,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
                           width: 24,
                           child: CircularProgressIndicator(
                             color: Colors.white,
-                            strokeWidth: 2,
+                            strokeWidth: 2.5,
                           ),
                         )
                       : const Text(
@@ -276,6 +248,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
                         ),
                 ),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -283,32 +256,131 @@ class _AddListingScreenState extends State<AddListingScreen> {
     );
   }
 
+  Widget _buildLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
+      child: Text(
+        text,
+        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    String? prefixText,
+    int maxLines = 1,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      validator: validator,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        hintText: hintText,
+        prefixText: prefixText,
+        prefixStyle: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdown({
+    required String? value,
+    required String hint,
+    required List<String> items,
+    required void Function(String?) onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      initialValue: value,
+      isExpanded: true,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+      ),
+      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, overflow: TextOverflow.ellipsis))).toList(),
+      onChanged: onChanged,
+      hint: Text(hint),
+    );
+  }
+
   Widget _buildImagePicker() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _buildLabel('Foto Barang'),
         if (_images.isNotEmpty)
           SizedBox(
             height: 120,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: _images.length,
+              itemCount: _images.length + 1,
               itemBuilder: (context, index) {
+                if (index == _images.length) {
+                  return GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      width: 120,
+                      margin: const EdgeInsets.only(right: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.primary, style: BorderStyle.solid),
+                      ),
+                      child: const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.add_photo_alternate_outlined, color: AppColors.primary, size: 32),
+                          SizedBox(height: 8),
+                          Text('Tambah', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                  );
+                }
                 final img = _images[index];
                 return Stack(
                   children: [
                     Container(
-                      margin: const EdgeInsets.only(right: 12),
                       width: 120,
+                      margin: const EdgeInsets.only(right: 12),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppColors.border),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: kIsWeb
-                            ? Image.network(img.path, fit: BoxFit.cover)
-                            : Image.file(File(img.path), fit: BoxFit.cover),
+                        image: DecorationImage(
+                          image: kIsWeb ? NetworkImage(img.path) : FileImage(File(img.path)) as ImageProvider,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                     Positioned(
@@ -319,14 +391,10 @@ class _AddListingScreenState extends State<AddListingScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: const BoxDecoration(
-                            color: Colors.red,
+                            color: Colors.redAccent,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
-                            Icons.close,
-                            size: 16,
-                            color: Colors.white,
-                          ),
+                          child: const Icon(Icons.close, color: Colors.white, size: 16),
                         ),
                       ),
                     ),
@@ -334,36 +402,28 @@ class _AddListingScreenState extends State<AddListingScreen> {
                 );
               },
             ),
-          ),
-        if (_images.isNotEmpty) const SizedBox(height: 12),
-        GestureDetector(
-          onTap: _pickImage,
-          child: Container(
-            height: _images.isEmpty ? 150 : 60,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.add_a_photo,
-                  size: _images.isEmpty ? 40 : 24,
-                  color: AppColors.textSecondary,
-                ),
-                if (_images.isEmpty) const SizedBox(height: 8),
-                if (_images.isEmpty)
-                  const Text(
-                    'Tap untuk upload foto barang',
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
-              ],
+          )
+        else
+          GestureDetector(
+            onTap: _pickImage,
+            child: Container(
+              width: double.infinity,
+              height: 160,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border, width: 2),
+              ),
+              child: const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add_a_photo_outlined, size: 48, color: AppColors.textSecondary),
+                  SizedBox(height: 16),
+                  Text('Tap untuk unggah foto (Bisa lebih dari 1)', style: TextStyle(color: AppColors.textSecondary)),
+                ],
+              ),
             ),
           ),
-        ),
       ],
     );
   }

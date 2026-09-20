@@ -59,7 +59,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        backgroundColor: AppColors.background,
+        body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
       );
     }
 
@@ -68,58 +69,91 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp', decimalDigits: 0);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Profil Penjual', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text('Profil Penjual', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
       ),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
-            child: Padding(
+            child: Container(
+              margin: const EdgeInsets.all(20),
               padding: const EdgeInsets.all(24.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(10),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: AppColors.primary,
-                    backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
-                    child: avatarUrl == null
-                        ? const Icon(Icons.person, size: 50, color: Colors.white)
-                        : null,
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.primary.withAlpha(50), width: 4),
+                    ),
+                    child: CircleAvatar(
+                      radius: 54,
+                      backgroundColor: AppColors.background,
+                      backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                      child: avatarUrl == null
+                          ? const Icon(Icons.person, size: 50, color: AppColors.textSecondary)
+                          : null,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     fullName,
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 4),
-                  const Text('Anggota Terverifikasi', style: TextStyle(color: AppColors.textSecondary)),
-                  const SizedBox(height: 24),
-                  const Divider(),
+                  const Text(
+                    'Anggota UNESA Marketplace',
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                  ),
                 ],
               ),
             ),
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
               child: Text(
-                'Barang Jualan ($fullName)',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                'Barang Jualan',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
               ),
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 16)),
           if (_products.isEmpty)
             const SliverFillRemaining(
-              child: Center(child: Text('Belum ada barang jualan.')),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.inventory_2_outlined, size: 64, color: AppColors.border),
+                    SizedBox(height: 16),
+                    Text('Belum ada barang jualan.', style: TextStyle(color: AppColors.textSecondary)),
+                  ],
+                ),
+              ),
             )
           else
             SliverPadding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
               sliver: SliverGrid(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.75,
+                  childAspectRatio: 0.72,
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                 ),
@@ -137,87 +171,101 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                     
                     final thumb = imageUrls.isNotEmpty ? imageUrls.first : null;
 
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ItemDetailScreen(product: product)),
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Container(
-                                width: double.infinity,
-                                decoration: const BoxDecoration(
-                                  color: Colors.grey,
-                                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                                ),
-                                child: thumb != null
-                                    ? ClipRRect(
-                                        borderRadius: const BorderRadius.vertical(
-                                          top: Radius.circular(12),
-                                        ),
-                                        child: Stack(
-                                          fit: StackFit.expand,
-                                          children: [
-                                            Opacity(
-                                              opacity: isSold ? 0.4 : 1.0,
-                                              child: Image.network(thumb, fit: BoxFit.cover),
-                                            ),
-                                            if (isSold)
-                                              Center(
-                                                child: Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                  color: Colors.red,
-                                                  child: const Text(
-                                                    'TERJUAL',
-                                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(15),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(16),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => ItemDetailScreen(product: product)),
+                            );
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  width: double.infinity,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.background,
+                                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                                  ),
+                                  child: thumb != null
+                                      ? ClipRRect(
+                                          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                                          child: Stack(
+                                            fit: StackFit.expand,
+                                            children: [
+                                              Opacity(
+                                                opacity: isSold ? 0.4 : 1.0,
+                                                child: Image.network(thumb, fit: BoxFit.cover),
+                                              ),
+                                              if (isSold)
+                                                Center(
+                                                  child: Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.redAccent,
+                                                      borderRadius: BorderRadius.circular(8),
+                                                    ),
+                                                    child: const Text(
+                                                      'TERJUAL',
+                                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                          ],
+                                            ],
+                                          ),
+                                        )
+                                      : const Center(
+                                          child: Icon(Icons.inventory_2_outlined, color: AppColors.textSecondary, size: 40),
                                         ),
-                                      )
-                                    : const Center(
-                                        child: Icon(Icons.image, color: Colors.white, size: 40),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      title,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                        decoration: isSold ? TextDecoration.lineThrough : null,
+                                        color: isSold ? AppColors.textSecondary : AppColors.textPrimary,
                                       ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    title,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      decoration: isSold ? TextDecoration.lineThrough : null,
-                                      color: isSold ? Colors.grey : AppColors.textPrimary,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    currencyFormatter.format(price),
-                                    style: TextStyle(
-                                      color: isSold ? Colors.grey : AppColors.primary,
-                                      fontWeight: FontWeight.bold,
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      currencyFormatter.format(price),
+                                      style: TextStyle(
+                                        color: isSold ? AppColors.textSecondary : AppColors.secondary,
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 16,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -226,6 +274,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                 ),
               ),
             ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
       ),
     );

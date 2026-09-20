@@ -56,6 +56,21 @@ class UnesaMarketplaceApp extends StatelessWidget {
           centerTitle: false,
         ),
       ),
+      builder: (context, child) {
+        // Trik jitu agar tampilan web/desktop tidak "zebra" (berantakan/melebar).
+        // Kita kunci lebar maksimalnya seukuran layar HP (450px).
+        return Container(
+          color: Colors.grey[200], // Background luar kalau di web
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: ClipRect(
+                child: child,
+              ),
+            ),
+          ),
+        );
+      },
       home: const AnimatedSplashScreen(),
     );
   }
@@ -97,8 +112,8 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> with Single
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             transitionDuration: const Duration(milliseconds: 500),
-            pageBuilder: (_, __, ___) => const AuthGate(),
-            transitionsBuilder: (_, animation, __, child) {
+            pageBuilder: (_, _, _) => const AuthGate(),
+            transitionsBuilder: (_, animation, _, child) {
               return FadeTransition(opacity: animation, child: child);
             },
           ),

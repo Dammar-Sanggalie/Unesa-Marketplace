@@ -180,16 +180,21 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     final isOwnProduct = widget.product['seller_id'] == _myUserId;
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
         title: const Text(
           'Detail Barang',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         actions: [
           IconButton(
             icon: Icon(
-              _isSaved ? Icons.favorite : Icons.favorite_border,
-              color: _isSaved ? Colors.red : null,
+              _isSaved ? Icons.bookmark : Icons.bookmark_border,
+              color: _isSaved ? AppColors.secondary : AppColors.textPrimary,
             ),
             onPressed: _toggleSave,
           ),
@@ -202,8 +207,8 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
             // Gambar Produk
             Container(
               width: double.infinity,
-              height: 280,
-              color: Colors.black,
+              height: 300,
+              color: Colors.white,
               child: imageUrls.isNotEmpty
                   ? Stack(
                       children: [
@@ -253,7 +258,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                                       child: Icon(
                                         Icons.broken_image,
                                         size: 80,
-                                        color: Colors.grey,
+                                        color: AppColors.border,
                                       ),
                                     ),
                               ),
@@ -262,8 +267,8 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                         ),
                         if (imageUrls.length > 1)
                           Positioned(
-                            bottom: 12,
-                            right: 12,
+                            bottom: 16,
+                            right: 16,
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
@@ -279,102 +284,133 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                       ],
                     )
                   : const Center(
-                      child: Icon(Icons.image, size: 80, color: Colors.grey),
+                      child: Icon(Icons.inventory_2_outlined, size: 80, color: AppColors.border),
                     ),
             ),
 
-            Padding(
-              padding: const EdgeInsets.all(16.0),
+            // Konten Detail
+            Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              transform: Matrix4.translationValues(0, -16, 0),
+              padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Judul dan Harga
-                  Text(
-                    widget.product['title'] ?? 'Tanpa Nama',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.product['title'] ?? 'Tanpa Nama',
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Text(
                     currencyFormatter.format(price),
                     style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.secondary,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Divider(),
-
-                  // Info Singkat
-                  const SizedBox(height: 8),
-                  _buildInfoRow(
-                    Icons.category,
-                    'Kategori',
-                    widget.product['category'] ?? '-',
-                  ),
-                  const SizedBox(height: 12),
-                  _buildInfoRow(
-                    Icons.info_outline,
-                    'Kondisi',
-                    widget.product['condition'] ?? '-',
-                  ),
-                  const SizedBox(height: 8),
-                  const Divider(),
-                  const SizedBox(height: 8),
-
-                  // Deskripsi
-                  const Text(
-                    'Deskripsi',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.product['description'] ?? 'Tidak ada deskripsi.',
-                    style: const TextStyle(fontSize: 15, height: 1.5),
+                  const SizedBox(height: 24),
+                  
+                  // Info Cards
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildInfoCard(
+                          icon: Icons.category_outlined,
+                          title: 'Kategori',
+                          value: widget.product['category'] ?? '-',
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildInfoCard(
+                          icon: Icons.info_outline,
+                          title: 'Kondisi',
+                          value: widget.product['condition'] ?? '-',
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 24),
 
                   // Info Penjual
                   const Text(
-                    'Informasi Penjual',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    'Penjual',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                   ),
                   const SizedBox(height: 12),
                   _isLoadingSeller
-                      ? const Center(child: CircularProgressIndicator())
-                      : ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: CircleAvatar(
-                            backgroundColor: AppColors.primary,
-                            backgroundImage: _sellerProfile?['avatar_url'] != null
-                                ? NetworkImage(_sellerProfile!['avatar_url'])
-                                : null,
-                            child: _sellerProfile?['avatar_url'] == null
-                                ? const Icon(Icons.person, color: Colors.white)
-                                : null,
+                      ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                      : Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.background,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.border),
                           ),
-                          title: Text(
-                            _sellerProfile?['full_name'] ?? 'Pengguna',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: const Text('Anggota terverifikasi'),
-                          isThreeLine: false,
-                          onTap: () {
-                            if (widget.product['seller_id'] != null) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => PublicProfileScreen(
-                                    userId: widget.product['seller_id'],
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            leading: CircleAvatar(
+                              radius: 24,
+                              backgroundColor: AppColors.border,
+                              backgroundImage: _sellerProfile?['avatar_url'] != null
+                                  ? NetworkImage(_sellerProfile!['avatar_url'])
+                                  : null,
+                              child: _sellerProfile?['avatar_url'] == null
+                                  ? const Icon(Icons.person, color: AppColors.textSecondary)
+                                  : null,
+                            ),
+                            title: Text(
+                              _sellerProfile?['full_name'] ?? 'Pengguna',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                            subtitle: const Text('Anggota Kampus'),
+                            trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                            onTap: () {
+                              if (widget.product['seller_id'] != null) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PublicProfileScreen(
+                                      userId: widget.product['seller_id'],
+                                    ),
                                   ),
-                                ),
-                              );
-                            }
-                          },
+                                );
+                              }
+                            },
+                          ),
                         ),
+                  const SizedBox(height: 24),
+
+                  // Deskripsi
+                  const Text(
+                    'Deskripsi',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    widget.product['description'] ?? 'Tidak ada deskripsi.',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      height: 1.6,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
@@ -382,26 +418,33 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
         ),
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          border: Border(top: BorderSide(color: Colors.grey.shade300)),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(15),
+              offset: const Offset(0, -4),
+              blurRadius: 10,
+            ),
+          ],
         ),
         child: SafeArea(
           child: SizedBox(
-            height: 50,
+            height: 54,
             child: ElevatedButton.icon(
               onPressed: (isOwnProduct || _isLoadingSeller) ? null : _contactSeller,
-              icon: Icon(isOwnProduct ? Icons.store : Icons.chat),
+              icon: Icon(isOwnProduct ? Icons.store_outlined : Icons.chat_bubble_outline),
               label: Text(
-                isOwnProduct ? 'Barang Anda Sendiri' : 'Hubungi Penjual',
+                isOwnProduct ? 'Barang Anda Sendiri' : 'Chat Penjual',
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: isOwnProduct ? Colors.grey : Colors.green, // Warna abu-abu kalau punya sendiri
-                foregroundColor: Colors.white,
+                backgroundColor: isOwnProduct ? AppColors.border : AppColors.primary,
+                foregroundColor: isOwnProduct ? AppColors.textSecondary : Colors.white,
+                elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
             ),
@@ -411,15 +454,31 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: AppColors.textSecondary),
-        const SizedBox(width: 8),
-        Text('$label:', style: const TextStyle(color: AppColors.textSecondary)),
-        const SizedBox(width: 8),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
-      ],
+  Widget _buildInfoCard({required IconData icon, required String title, required String value}) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: AppColors.textSecondary),
+              const SizedBox(width: 6),
+              Text(title, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary, fontSize: 14),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -69,7 +69,11 @@ class ExploreScreenState extends State<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
         title: Row(
           children: [
             Image.asset(
@@ -79,65 +83,82 @@ class ExploreScreenState extends State<ExploreScreen> {
             const SizedBox(width: 8),
             const Text(
               'Marketplace',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary),
             ),
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add_box),
-            tooltip: 'Jual Barang',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AddListingScreen()),
-              ).then((_) => _fetchProducts());
-            },
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withAlpha(25),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.add_box, color: AppColors.primary),
+              tooltip: 'Jual Barang',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AddListingScreen()),
+                ).then((_) => _fetchProducts());
+              },
+            ),
           ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () => _fetchProducts(_searchController.text),
+        color: AppColors.primary,
         child: CustomScrollView(
           slivers: [
+            // Search Bar
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SearchBar(
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: TextField(
                   controller: _searchController,
-                  hintText: 'Cari barang...',
-                  leading: const Icon(
-                    Icons.search,
-                    color: AppColors.textSecondary,
-                  ),
-                  elevation: const WidgetStatePropertyAll(0),
-                  backgroundColor: const WidgetStatePropertyAll(AppColors.surface),
-                  shape: WidgetStatePropertyAll(
-                    RoundedRectangleBorder(
-                      side: const BorderSide(color: AppColors.border),
-                      borderRadius: BorderRadius.circular(12),
+                  textInputAction: TextInputAction.search,
+                  onSubmitted: _fetchProducts,
+                  decoration: InputDecoration(
+                    hintText: 'Cari barang apa hari ini?',
+                    hintStyle: const TextStyle(color: AppColors.textSecondary),
+                    prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                    filled: true,
+                    fillColor: AppColors.background,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
                     ),
                   ),
-                  onSubmitted: _fetchProducts,
                 ),
               ),
             ),
+            // Category Chips
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.only(bottom: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Kategori',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text(
+                        'Kategori',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Row(
                         children: [
                           _buildCategoryChip('Semua', Icons.grid_view, null),
@@ -150,33 +171,51 @@ class ExploreScreenState extends State<ExploreScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Barang Terbaru',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                   ],
                 ),
               ),
             ),
+            
+            // Header Barang Terbaru
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
+                child: Text(
+                  'Barang Terbaru',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ),
+            
+            // Grid Products
             if (_isLoading)
               const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
               )
             else if (_products.isEmpty)
               const SliverFillRemaining(
-                child: Center(child: Text('Belum ada barang.')),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.inventory_2_outlined, size: 64, color: AppColors.border),
+                      SizedBox(height: 16),
+                      Text('Belum ada barang ditemukan.', style: TextStyle(color: AppColors.textSecondary)),
+                    ],
+                  ),
+                ),
               )
             else
               SliverPadding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 sliver: SliverGrid(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 0.75,
+                    childAspectRatio: 0.72,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
                   ),
@@ -185,6 +224,8 @@ class ExploreScreenState extends State<ExploreScreen> {
                   }, childCount: _products.length),
                 ),
               ),
+              
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
         ),
       ),
@@ -195,15 +236,37 @@ class ExploreScreenState extends State<ExploreScreen> {
     final isSelected = _selectedCategory == categoryValue;
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
-      child: ActionChip(
-        avatar: Icon(icon, size: 16, color: isSelected ? Colors.white : AppColors.primary),
-        label: Text(label, style: TextStyle(color: isSelected ? Colors.white : AppColors.textPrimary)),
-        backgroundColor: isSelected ? AppColors.primary : AppColors.surface,
-        side: BorderSide(color: isSelected ? AppColors.primary : AppColors.border),
-        onPressed: () {
-          setState(() => _selectedCategory = categoryValue);
-          _fetchProducts(_searchController.text);
-        },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        child: FilterChip(
+          showCheckmark: false,
+          avatar: Icon(
+            icon,
+            size: 18,
+            color: isSelected ? Colors.white : AppColors.primary,
+          ),
+          label: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : AppColors.textPrimary,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          backgroundColor: Colors.white,
+          selectedColor: AppColors.primary,
+          selected: isSelected,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: isSelected ? AppColors.primary : AppColors.border,
+              width: 1,
+            ),
+          ),
+          onSelected: (bool selected) {
+            setState(() => _selectedCategory = selected ? categoryValue : null);
+            _fetchProducts(_searchController.text);
+          },
+        ),
       ),
     );
   }
@@ -220,77 +283,93 @@ class ExploreScreenState extends State<ExploreScreen> {
         : (product['image_url'] as String?);
     final price = product['price'] ?? 0;
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ItemDetailScreen(product: product),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(15),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Colors.grey,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                ),
-                child: imageUrl != null
-                    ? ClipRRect(
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(12),
-                        ),
-                        child: Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Center(
-                                child: Icon(
-                                  Icons.broken_image,
-                                  color: Colors.white,
-                                  size: 40,
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ItemDetailScreen(product: product),
+              ),
+            );
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Product Image
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                  ),
+                  child: imageUrl != null
+                      ? ClipRRect(
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                          child: Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Center(
+                                  child: Icon(
+                                    Icons.broken_image,
+                                    color: AppColors.textSecondary,
+                                    size: 40,
+                                  ),
                                 ),
-                              ),
+                          ),
+                        )
+                      : const Center(
+                          child: Icon(Icons.image, color: AppColors.textSecondary, size: 40),
                         ),
-                      )
-                    : const Center(
-                        child: Icon(Icons.image, color: Colors.white, size: 40),
+                ),
+              ),
+              // Product Details
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product['title'] ?? '',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: AppColors.textPrimary,
                       ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product['title'] ?? '',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    currencyFormatter.format(price),
-                    style: const TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Text(
+                      currencyFormatter.format(price),
+                      style: const TextStyle(
+                        color: AppColors.secondary,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

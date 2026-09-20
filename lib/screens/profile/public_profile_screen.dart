@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
+import '../../core/constants/breakpoints.dart';
 import '../../core/constants/colors.dart';
+import '../../core/theme/web_theme.dart';
+import '../explore/desktop_product_card.dart';
 import '../product/item_detail_screen.dart';
 
 class PublicProfileScreen extends StatefulWidget {
@@ -57,6 +60,163 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!ResponsiveBreakpoints.isDesktopOrTablet(context)) {
+      return _buildMobileLayout(context);
+    }
+    return _buildDesktopLayout(context);
+  }
+
+  // DESKTOP PUBLIC PROFILE LAYOUT
+  Widget _buildDesktopLayout(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFF8FAFC),
+        body: Center(child: CircularProgressIndicator(color: WebTheme.accent)),
+      );
+    }
+
+    final String fullName = _profile?['full_name'] ?? 'Pengguna UNESA';
+    final String? avatarUrl = _profile?['avatar_url'];
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final gridColumns = ResponsiveBreakpoints.getGridColumnCount(screenWidth);
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: WebTheme.textPrimary),
+          onPressed: () => Navigator.pop(context),
+          tooltip: 'Kembali',
+        ),
+        title: Text('Profil Penjual', style: WebTheme.sectionTitle.copyWith(fontSize: 18)),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1, color: WebTheme.border),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+        child: Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: ResponsiveBreakpoints.maxContentWidth),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Seller Profile Header Banner
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: WebTheme.border),
+                    boxShadow: WebTheme.cardShadow,
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 46,
+                        backgroundColor: WebTheme.primary,
+                        backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                        child: avatarUrl == null
+                            ? const Icon(Icons.person, size: 46, color: Colors.white)
+                            : null,
+                      ),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              fullName,
+                              style: WebTheme.heroHeading.copyWith(fontSize: 24),
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(Icons.verified, size: 16, color: WebTheme.accent),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Sivitas Akademika UNESA Terverifikasi',
+                                  style: WebTheme.navLink.copyWith(
+                                    color: WebTheme.textSecondary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: WebTheme.surfaceHover,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: WebTheme.border),
+                              ),
+                              child: Text(
+                                '${_products.length} barang diiklankan',
+                                style: WebTheme.badgeText.copyWith(color: WebTheme.textSecondary),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // Products Section
+                Text(
+                  'Barang Jualan dari $fullName',
+                  style: WebTheme.sectionTitle.copyWith(fontSize: 20),
+                ),
+                const SizedBox(height: 16),
+
+                if (_products.isEmpty)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(48),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: WebTheme.border),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Penjual ini belum memiliki barang jualan aktif.',
+                        style: WebTheme.navLink.copyWith(color: WebTheme.textSecondary),
+                      ),
+                    ),
+                  )
+                else
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: gridColumns,
+                      childAspectRatio: 0.76,
+                      crossAxisSpacing: 18,
+                      mainAxisSpacing: 20,
+                    ),
+                    itemCount: _products.length,
+                    itemBuilder: (context, index) {
+                      return DesktopProductCard(product: _products[index]);
+                    },
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // EXACT EXISTING MOBILE LAYOUT — ZERO REGRESSION
+  Widget _buildMobileLayout(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -129,12 +289,12 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                     final title = product['title'] ?? 'Tanpa Nama';
                     final price = product['price'] ?? 0;
                     final isSold = product['is_sold'] == true;
-                    
+
                     final legacyImageUrls = product['image_urls'];
                     final imageUrls = legacyImageUrls is List && legacyImageUrls.isNotEmpty
                         ? legacyImageUrls.cast<String>()
                         : [if (product['image_url'] is String) product['image_url'] as String];
-                    
+
                     final thumb = imageUrls.isNotEmpty ? imageUrls.first : null;
 
                     return GestureDetector(

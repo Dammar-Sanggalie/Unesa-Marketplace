@@ -3,7 +3,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/constants/breakpoints.dart';
 import '../../core/constants/colors.dart';
+import '../../core/theme/web_theme.dart';
+import 'desktop_chat_pane.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   final String chatId;
@@ -24,7 +27,7 @@ class ChatDetailScreen extends StatefulWidget {
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final _messageController = TextEditingController();
   final _picker = ImagePicker();
-  
+
   bool _isUploading = false;
   XFile? _selectedImage;
 
@@ -61,7 +64,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         } else {
           await Supabase.instance.client.storage.from('chat_images').upload(path, File(image.path));
         }
-        
+
         imageUrl = Supabase.instance.client.storage.from('chat_images').getPublicUrl(path);
       }
 
@@ -89,6 +92,55 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!ResponsiveBreakpoints.isDesktopOrTablet(context)) {
+      return _buildMobileLayout(context);
+    }
+    return _buildDesktopLayout(context);
+  }
+
+  // DESKTOP LAYOUT
+  Widget _buildDesktopLayout(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: WebTheme.textPrimary),
+          onPressed: () => Navigator.pop(context),
+          tooltip: 'Kembali',
+        ),
+        title: Text('Percakapan', style: WebTheme.sectionTitle.copyWith(fontSize: 18)),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1, color: WebTheme.border),
+        ),
+      ),
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 860),
+          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: WebTheme.border),
+            boxShadow: WebTheme.cardShadow,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: DesktopChatPane(
+              chatId: widget.chatId,
+              otherUserName: widget.otherUserName,
+              productTitle: widget.productTitle,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // EXACT EXISTING MOBILE LAYOUT — ZERO REGRESSION
+  Widget _buildMobileLayout(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -112,19 +164,19 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                
+
                 final rawMessages = snapshot.data ?? [];
-                
+
                 // Deduplicate to fix the double bubble bug on insert
                 final Map<String, Map<String, dynamic>> uniqueMessages = {};
                 for (var msg in rawMessages) {
                   uniqueMessages[msg['id']] = msg;
                 }
                 final messages = uniqueMessages.values.toList();
-                
+
                 // Sort just in case order was affected by map
                 messages.sort((a, b) => (a['created_at'] as String).compareTo(b['created_at'] as String));
-                
+
                 if (messages.isEmpty) {
                   return const Center(child: Text('Belum ada pesan. Sapa penjual sekarang!'));
                 }
@@ -173,9 +225,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               },
             ),
           ),
-          
+
           if (_isUploading) const LinearProgressIndicator(),
-          
+
           // Image Preview Area
           if (_selectedImage != null)
             Container(
@@ -216,7 +268,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 ],
               ),
             ),
-            
+
           // Input Area
           Container(
             padding: const EdgeInsets.all(8),

@@ -5,16 +5,21 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import 'core/constants/breakpoints.dart';
 import 'core/constants/colors.dart';
 import 'screens/auth/auth_screen.dart';
 import 'screens/explore/explore_screen.dart';
 import 'screens/chat/chat_list_screen.dart';
 import 'screens/profile/profile_screen.dart';
+import 'screens/listing/add_listing_screen.dart';
+import 'screens/listing/my_listings_screen.dart';
+import 'screens/listing/saved_items_screen.dart';
+import 'screens/web/web_header.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  
+
   final supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
   final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
 
@@ -97,8 +102,8 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> with Single
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             transitionDuration: const Duration(milliseconds: 500),
-            pageBuilder: (_, __, ___) => const AuthGate(),
-            transitionsBuilder: (_, animation, __, child) {
+            pageBuilder: (context, animation, secondaryAnimation) => const AuthGate(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },
           ),
@@ -170,33 +175,101 @@ class MainNavigator extends StatefulWidget {
 }
 
 class MainNavigatorState extends State<MainNavigator> {
+  // Mobile tab index (0: Explore, 1: Pesan, 2: Profil)
   int _currentIndex = 0;
   DateTime? _lastPressedAt;
 
-  final List<Widget> _screens = [
+  // Desktop active tab (0: Explore, 1: Sell, 2: My Listings, 3: Saved, 4: Chat, 5: Profile)
+  int _desktopIndex = 0;
+
+  final List<Widget> _mobileScreens = [
     ExploreScreen(key: _exploreKey),
     const ChatListScreen(),
     const ProfileScreen(),
   ];
 
-  void switchTab(int index) {
+  void switchMobileTab(int index) {
     setState(() {
       _currentIndex = index;
-      
-      // Update screens to force rebuild ChatListScreen so it fetches latest chats
-      _screens[1] = ChatListScreen(key: UniqueKey());
+      _mobileScreens[1] = ChatListScreen(key: UniqueKey());
+    });
+  }
+
+  void switchDesktopTab(int index) {
+    setState(() {
+      _desktopIndex = index;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveBreakpoints.isDesktopOrTablet(context);
+
+    if (isDesktop) {
+      return _buildDesktopShell(context);
+    }
+    return _buildMobileShell(context);
+  }
+
+  // DESKTOP FULL-WIDTH WEB SHELL
+  Widget _buildDesktopShell(BuildContext context) {
+    Widget currentContent;
+    switch (_desktopIndex) {
+      case 0:
+        currentContent = ExploreScreen(
+          key: _exploreKey,
+          onNavigateToSell: () => switchDesktopTab(1),
+        );
+        break;
+      case 1:
+        currentContent = const AddListingScreen();
+        break;
+      case 2:
+        currentContent = const MyListingsScreen();
+        break;
+      case 3:
+        currentContent = SavedItemsScreen(
+          onExploreTap: () => switchDesktopTab(0),
+        );
+        break;
+      case 4:
+        currentContent = ChatListScreen(key: UniqueKey());
+        break;
+      case 5:
+        currentContent = ProfileScreen(
+          onNavigateToListings: () => switchDesktopTab(2),
+          onNavigateToSaved: () => switchDesktopTab(3),
+        );
+        break;
+      default:
+        currentContent = ExploreScreen(key: _exploreKey);
+    }
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: Column(
+        children: [
+          WebHeader(
+            activeIndex: _desktopIndex,
+            onSelectTab: switchDesktopTab,
+          ),
+          Expanded(
+            child: currentContent,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // EXACT EXISTING MOBILE LAYOUT — ZERO REGRESSION
+  Widget _buildMobileShell(BuildContext context) {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
 
         if (_currentIndex != 0) {
-          switchTab(0);
+          switchMobileTab(0);
           return;
         }
 
@@ -211,17 +284,17 @@ class MainNavigatorState extends State<MainNavigator> {
           );
           return;
         }
-        
+
         SystemNavigator.pop();
       },
       child: Scaffold(
         body: IndexedStack(
           index: _currentIndex,
-          children: _screens,
+          children: _mobileScreens,
         ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: _currentIndex,
-          onDestinationSelected: switchTab,
+          onDestinationSelected: switchMobileTab,
           backgroundColor: AppColors.surface,
           destinations: const [
             NavigationDestination(
@@ -245,4 +318,3 @@ class MainNavigatorState extends State<MainNavigator> {
     );
   }
 }
-

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/constants/breakpoints.dart';
 import '../../core/constants/colors.dart';
 import '../product/item_detail_screen.dart';
 import '../listing/add_listing_screen.dart';
+import 'desktop_explore_view.dart';
 
 class ExploreScreen extends StatefulWidget {
-  const ExploreScreen({super.key});
+  final VoidCallback? onNavigateToSell;
+
+  const ExploreScreen({super.key, this.onNavigateToSell});
 
   @override
   State<ExploreScreen> createState() => ExploreScreenState();
@@ -44,7 +48,7 @@ class ExploreScreenState extends State<ExploreScreen> {
       if (query.isNotEmpty) {
         dbQuery = dbQuery.ilike('title', '%$query%');
       }
-      
+
       if (_selectedCategory != null) {
         dbQuery = dbQuery.eq('category', _selectedCategory!);
       }
@@ -68,6 +72,40 @@ class ExploreScreenState extends State<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!ResponsiveBreakpoints.isDesktopOrTablet(context)) {
+      return _buildMobileView(context);
+    }
+    return _buildDesktopView(context);
+  }
+
+  // DESKTOP LAYOUT
+  Widget _buildDesktopView(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: DesktopExploreView(
+        products: _products,
+        isLoading: _isLoading,
+        selectedCategory: _selectedCategory,
+        searchController: _searchController,
+        onSelectCategory: (category) {
+          setState(() => _selectedCategory = category);
+          _fetchProducts(_searchController.text);
+        },
+        onSearchSubmitted: (query) => _fetchProducts(query),
+        onRefresh: () => _fetchProducts(_searchController.text),
+        onSellTap: widget.onNavigateToSell ??
+            () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AddListingScreen()),
+              ).then((_) => _fetchProducts());
+            },
+      ),
+    );
+  }
+
+  // EXACT EXISTING MOBILE LAYOUT — ZERO REGRESSION
+  Widget _buildMobileView(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Row(
